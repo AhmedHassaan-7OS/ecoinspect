@@ -1,142 +1,19 @@
 import 'package:flutter/material.dart';
 
-class EventLogCard extends StatelessWidget {
+enum _EventFilter { all, errors, toolChange, maintenance }
+
+class EventLogCard extends StatefulWidget {
   const EventLogCard({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isNarrow = constraints.maxWidth < 520;
+  State<EventLogCard> createState() => _EventLogCardState();
+}
 
-              if (isNarrow) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Event Log',
-                      style: TextStyle(
-                        color: Color(0xFFFFFFFF),
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _buildFilterChip('All', true),
-                        _buildFilterChip('Errors', false),
-                        _buildFilterChip('Tool Change', false),
-                        _buildFilterChip('Maintenance', false),
-                      ],
-                    ),
-                  ],
-                );
-              }
+class _EventLogCardState extends State<EventLogCard> {
+  _EventFilter _selectedFilter = _EventFilter.all;
 
-              return Row(
-                children: [
-                  const Text(
-                    'Event Log',
-                    style: TextStyle(
-                      color: Color(0xFFFFFFFF),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  _buildFilterChip('All', true),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Errors', false),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Tool Change', false),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Maintenance', false),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 24),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF161B22),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF30363D)),
-            ),
-            child: Column(
-              children: [
-                _buildEventHeader(),
-                ...List.generate(8, (index) => _buildEventRow(index)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF58A6FF) : const Color(0xFF161B22),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isSelected ? const Color(0xFF58A6FF) : const Color(0xFF30363D),
-        ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : const Color(0xFF8B949E),
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEventHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFF30363D))),
-      ),
-      child: Row(
-        children: [
-          _buildHeaderCell('Time', flex: 1),
-          _buildHeaderCell('Machine', flex: 2),
-          _buildHeaderCell('Event Type', flex: 2),
-          _buildHeaderCell('Severity', flex: 1),
-          _buildHeaderCell('Description', flex: 3),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderCell(String text, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFF8B949E),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEventRow(int index) {
-    final events = [
+  List<Map<String, String>> _allEvents() {
+    return [
       {
         'time': '10:23 AM',
         'machine': 'Haas VF-2',
@@ -194,10 +71,224 @@ class EventLogCard extends StatelessWidget {
         'desc': 'Coolant level low',
       },
     ];
+  }
 
-    if (index >= events.length) return const SizedBox.shrink();
-    final event = events[index];
+  List<Map<String, String>> _filteredEvents() {
+    final events = _allEvents();
 
+    switch (_selectedFilter) {
+      case _EventFilter.all:
+        return events;
+      case _EventFilter.errors:
+        return events.where((e) => e['type'] == 'Error').toList();
+      case _EventFilter.toolChange:
+        return events.where((e) => e['type'] == 'Tool Change').toList();
+      case _EventFilter.maintenance:
+        return events.where((e) => e['type'] == 'Maintenance').toList();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final events = _filteredEvents();
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 520;
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Event Log',
+                      style: TextStyle(
+                        color: Color(0xFFFFFFFF),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildFilterChip(
+                          label: 'All',
+                          isSelected: _selectedFilter == _EventFilter.all,
+                          onTap: () {
+                            setState(() => _selectedFilter = _EventFilter.all);
+                          },
+                        ),
+                        _buildFilterChip(
+                          label: 'Errors',
+                          isSelected: _selectedFilter == _EventFilter.errors,
+                          onTap: () {
+                            setState(
+                              () => _selectedFilter = _EventFilter.errors,
+                            );
+                          },
+                        ),
+                        _buildFilterChip(
+                          label: 'Tool Change',
+                          isSelected: _selectedFilter == _EventFilter.toolChange,
+                          onTap: () {
+                            setState(
+                              () => _selectedFilter = _EventFilter.toolChange,
+                            );
+                          },
+                        ),
+                        _buildFilterChip(
+                          label: 'Maintenance',
+                          isSelected: _selectedFilter == _EventFilter.maintenance,
+                          onTap: () {
+                            setState(
+                              () => _selectedFilter = _EventFilter.maintenance,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  const Text(
+                    'Event Log',
+                    style: TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  _buildFilterChip(
+                    label: 'All',
+                    isSelected: _selectedFilter == _EventFilter.all,
+                    onTap: () {
+                      setState(() => _selectedFilter = _EventFilter.all);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    label: 'Errors',
+                    isSelected: _selectedFilter == _EventFilter.errors,
+                    onTap: () {
+                      setState(() => _selectedFilter = _EventFilter.errors);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    label: 'Tool Change',
+                    isSelected: _selectedFilter == _EventFilter.toolChange,
+                    onTap: () {
+                      setState(
+                        () => _selectedFilter = _EventFilter.toolChange,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  _buildFilterChip(
+                    label: 'Maintenance',
+                    isSelected: _selectedFilter == _EventFilter.maintenance,
+                    onTap: () {
+                      setState(
+                        () => _selectedFilter = _EventFilter.maintenance,
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF161B22),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF30363D)),
+            ),
+            child: Column(
+              children: [
+                _buildEventHeader(),
+                ...events.map(_buildEventRow).toList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF58A6FF) : const Color(0xFF161B22),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color:
+                isSelected ? const Color(0xFF58A6FF) : const Color(0xFF30363D),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF8B949E),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFF30363D))),
+      ),
+      child: Row(
+        children: [
+          _buildHeaderCell('Time', flex: 1),
+          _buildHeaderCell('Machine', flex: 2),
+          _buildHeaderCell('Event Type', flex: 2),
+          _buildHeaderCell('Severity', flex: 1),
+          _buildHeaderCell('Description', flex: 3),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String text, {int flex = 1}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF8B949E),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventRow(Map<String, String> event) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
@@ -221,6 +312,8 @@ class EventLogCard extends StatelessWidget {
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           Expanded(

@@ -153,16 +153,24 @@ class AuthCubit extends Cubit<AuthState> {
     final user = _supabase.auth.currentUser;
     if (user == null) throw Exception('No user session');
 
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$ext';
+    final normalizedExt = ext.toLowerCase() == 'jpg' ? 'jpeg' : ext.toLowerCase();
+    final contentType = 'image/$normalizedExt';
+
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$normalizedExt';
     final path = '${user.id}/$fileName';
 
-    await _supabase.storage
-        .from(kAvatarBucket)
-        .uploadBinary(
-          path,
-          bytes,
-          fileOptions: FileOptions(contentType: 'image/$ext'),
-        );
+    try {
+      await _supabase.storage.from(kAvatarBucket).uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(
+              contentType: contentType,
+              upsert: true,
+            ),
+          );
+    } catch (e) {
+      throw Exception('Avatar upload failed: $e');
+    }
 
     return _supabase.storage.from(kAvatarBucket).getPublicUrl(path);
   }

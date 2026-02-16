@@ -87,17 +87,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           child: Row(
             children: [
-              if (_isMobile)
-                IconButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Sidebar is available on larger screens'),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.menu, color: Color(0xFF8B949E)),
-                ),
               Expanded(
                 child: Text(
                   _getPageTitle(),
