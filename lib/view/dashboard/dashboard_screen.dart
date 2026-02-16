@@ -12,6 +12,8 @@ import '../widgets/maintenance_board_card.dart';
 import '../machines/add_machine_screen.dart';
 import '../auth/login_screen.dart';
 import '../profile/edit_account_screen.dart';
+import '../profile/profile_screen.dart';
+import '../notifications/issues_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -62,6 +64,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+      floatingActionButton: _isMobile
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 72),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FloatingActionButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const AddMachineScreen(),
+                        ),
+                      );
+                    },
+                    backgroundColor: const Color(0xFF238636),
+                    foregroundColor: Colors.white,
+                    child: const Icon(Icons.add),
+                  ),
+                  const SizedBox(height: 10),
+                  IgnorePointer(
+                    child: Container(
+                      width: 56,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF7C3AED),
+                            Color(0xFF22D3EE),
+                            Color(0xFF3B82F6),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                        border: Border.all(
+                          color: const Color(0xFF30363D),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.auto_awesome,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       // Bottom Navigation Bar for mobile
       bottomNavigationBar: _isMobile ? _buildBottomNavBar() : null,
     );
@@ -70,6 +130,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildFloatingTopIconsBar() {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, authState) {
+        final avatarUrl = authState.user?.avatarUrl ?? '';
         return Container(
           height: 56,
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -109,84 +170,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Icons.notifications_outlined,
                   color: Color(0xFF8B949E),
                 ),
-                onPressed: () {},
-              ),
-              const SizedBox(width: 6),
-              IconButton(
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const AddMachineScreen(),
+                      builder: (_) => const IssuesScreen(),
                     ),
                   );
                 },
-                icon: const Icon(Icons.add, color: Colors.white),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFF238636),
-                ),
               ),
               const SizedBox(width: 6),
-              PopupMenuButton<void>(
-                icon: CircleAvatar(
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileScreen(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(999),
+                child: CircleAvatar(
                   radius: 16,
                   backgroundColor: const Color(0xFF58A6FF),
-                  child: Text(
-                    (authState.user?.email ?? 'U')
-                        .substring(0, 1)
-                        .toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  backgroundImage:
+                      avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                  child: avatarUrl.isEmpty
+                      ? Text(
+                          (authState.user?.email ?? 'U')
+                              .substring(0, 1)
+                              .toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
                 ),
-                color: const Color(0xFF161B22),
-                itemBuilder: (context) => <PopupMenuEntry<void>>[
-                  PopupMenuItem<void>(
-                    onTap: () {
-                      Future.microtask(() {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const EditAccountScreen(),
-                          ),
-                        );
-                      });
-                    },
-                    child: const Row(
-                      children: [
-                        Icon(Icons.manage_accounts, color: Color(0xFF8B949E)),
-                        SizedBox(width: 10),
-                        Text(
-                          'Edit Account',
-                          style: TextStyle(color: Color(0xFFFFFFFF)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem<void>(
-                    onTap: () {
-                      Future.microtask(() {
-                        context.read<AuthCubit>().signOut();
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) => const LoginScreen(),
-                          ),
-                        );
-                      });
-                    },
-                    child: const Row(
-                      children: [
-                        Icon(Icons.logout, color: Color(0xFFDA3633)),
-                        SizedBox(width: 10),
-                        Text(
-                          'Sign Out',
-                          style: TextStyle(color: Color(0xFFDA3633)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -197,46 +215,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildBottomNavBar() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF161B22),
-        border: Border(top: BorderSide(color: Color(0xFF30363D), width: 1)),
+      decoration: BoxDecoration(
+        color: const Color(0xFF161B22),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+        border: const Border(
+          top: BorderSide(color: Color(0xFF30363D), width: 1),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, -8),
+          ),
+        ],
       ),
       child: SafeArea(
-        child: BottomNavigationBar(
-          currentIndex: _selectedIndex > 4 ? 0 : _selectedIndex,
-          onTap: (index) {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          backgroundColor: const Color(0xFF161B22),
-          selectedItemColor: const Color(0xFF58A6FF),
-          unselectedItemColor: const Color(0xFF8B949E),
-          type: BottomNavigationBarType.fixed,
-          selectedFontSize: 11,
-          unselectedFontSize: 10,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined, size: 22),
-              label: 'Fleet',
+        child: NavigationBarTheme(
+          data: const NavigationBarThemeData(
+            height: 64,
+            backgroundColor: Color(0xFF161B22),
+            indicatorColor: Color(0xFF1C2128),
+            labelTextStyle: WidgetStatePropertyAll(
+              TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.analytics_outlined, size: 22),
-              label: 'Scorecard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt, size: 22),
-              label: 'Machines',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.event_note, size: 22),
-              label: 'Events',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.build_outlined, size: 22),
-              label: 'Maintenance',
-            ),
-          ],
+          ),
+          child: NavigationBar(
+            selectedIndex: _selectedIndex > 4 ? 0 : _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined),
+                label: 'Fleet',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.analytics_outlined),
+                label: 'Scorecard',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.list_alt),
+                label: 'Machines',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.event_note),
+                label: 'Events',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.build_outlined),
+                label: 'Maintenance',
+              ),
+            ],
+          ),
         ),
       ),
     );
