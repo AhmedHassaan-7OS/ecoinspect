@@ -145,25 +145,37 @@ class MachineScorecard extends StatelessWidget {
           style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
         ),
         const SizedBox(height: 8),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              value.toString(),
-              style: const TextStyle(
-                color: Color(0xFFFFFFFF),
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    value.toString(),
+                    style: const TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4, left: 2),
+                    child: Text(
+                      unit,
+                      style: const TextStyle(
+                        color: Color(0xFF8B949E),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4, left: 2),
-              child: Text(
-                unit,
-                style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
-              ),
-            ),
-          ],
+            );
+          },
         ),
         const SizedBox(height: 8),
         LinearProgressIndicator(

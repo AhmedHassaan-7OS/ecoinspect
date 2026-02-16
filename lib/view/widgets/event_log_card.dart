@@ -10,25 +10,58 @@ class EventLogCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                'Event Log',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              _buildFilterChip('All', true),
-              const SizedBox(width: 8),
-              _buildFilterChip('Errors', false),
-              const SizedBox(width: 8),
-              _buildFilterChip('Tool Change', false),
-              const SizedBox(width: 8),
-              _buildFilterChip('Maintenance', false),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 520;
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Event Log',
+                      style: TextStyle(
+                        color: Color(0xFFFFFFFF),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildFilterChip('All', true),
+                        _buildFilterChip('Errors', false),
+                        _buildFilterChip('Tool Change', false),
+                        _buildFilterChip('Maintenance', false),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  const Text(
+                    'Event Log',
+                    style: TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  _buildFilterChip('All', true),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Errors', false),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Tool Change', false),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Maintenance', false),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 24),
           Container(
@@ -200,11 +233,15 @@ class EventLogCard extends StatelessWidget {
                   color: const Color(0xFF58A6FF),
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  event['type']!,
-                  style: const TextStyle(
-                    color: Color(0xFFFFFFFF),
-                    fontSize: 13,
+                Expanded(
+                  child: Text(
+                    event['type']!,
+                    style: const TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 13,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -234,6 +271,8 @@ class EventLogCard extends StatelessWidget {
             child: Text(
               event['desc']!,
               style: const TextStyle(color: Color(0xFF8B949E), fontSize: 13),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

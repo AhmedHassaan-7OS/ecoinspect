@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import '../../model/cnc_machine_model.dart';
 
@@ -59,7 +61,7 @@ class FleetOverviewCard extends StatelessWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 1.3, // Adjusted for better fit
+                  childAspectRatio: 1.15, // Adjusted for better fit
                   children: statCards,
                 );
               } else {
@@ -89,78 +91,116 @@ class FleetOverviewCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween, // Better spacing
-                  children: [
-                    const Text(
-                      'Fleet Performance',
-                      style: TextStyle(
-                        color: Color(0xFFFFFFFF),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (MediaQuery.of(context).size.width >
-                        400) // Hide legend on very small screens if needed, or wrap
-                      Row(
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isMobileHeader = constraints.maxWidth < 400;
+                    if (isMobileHeader) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildChartLegend(
-                            'Production',
-                            const Color(0xFF58A6FF),
+                          const Text(
+                            'Fleet Performance',
+                            style: TextStyle(
+                              color: Color(0xFFFFFFFF),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          const SizedBox(width: 16),
-                          _buildChartLegend(
-                            'Downtime',
-                            const Color(0xFFDA3633),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: List.generate(12, (index) {
-                        final height = 50 + (index * 15) % 150;
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                            right: 20,
-                          ), // Constant spacing
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                          const SizedBox(height: 8),
+                          Row(
                             children: [
-                              Container(
-                                width: 40,
-                                height: height.toDouble(),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                    colors: [
-                                      const Color(0xFF58A6FF),
-                                      const Color(0xFF58A6FF).withOpacity(0.3),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
+                              _buildChartLegend(
+                                'Production',
+                                const Color(0xFF58A6FF),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${index + 1}',
-                                style: const TextStyle(
-                                  color: Color(0xFF8B949E),
-                                  fontSize: 11,
-                                ),
+                              const SizedBox(width: 16),
+                              _buildChartLegend(
+                                'Downtime',
+                                const Color(0xFFDA3633),
                               ),
                             ],
                           ),
-                        );
-                      }),
-                    ),
+                        ],
+                      );
+                    } else {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Fleet Performance',
+                            style: TextStyle(
+                              color: Color(0xFFFFFFFF),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              _buildChartLegend(
+                                'Production',
+                                const Color(0xFF58A6FF),
+                              ),
+                              const SizedBox(width: 16),
+                              _buildChartLegend(
+                                'Downtime',
+                                const Color(0xFFDA3633),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final maxBarHeight = math.max(0.0, constraints.maxHeight - 28);
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: List.generate(12, (index) {
+                            final rawHeight = 50 + (index * 15) % 150;
+                            final height = math.min(rawHeight.toDouble(), maxBarHeight);
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                right: 20,
+                              ), // Constant spacing
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: height,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.bottomCenter,
+                                        end: Alignment.topCenter,
+                                        colors: [
+                                          const Color(0xFF58A6FF),
+                                          const Color(0xFF58A6FF).withOpacity(0.3),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF8B949E),
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -210,40 +250,58 @@ class FleetOverviewCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFF30363D)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxHeight > 0 && constraints.maxHeight < 90;
+          final iconBoxPadding = compact ? 6.0 : 8.0;
+          final iconSize = compact ? 18.0 : 20.0;
+          final valueFontSize = compact ? 20.0 : 24.0;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: color, size: 20),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(iconBoxPadding),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: color, size: iconSize),
+                  ),
+                  const Spacer(),
+                  const Icon(
+                    Icons.more_vert,
+                    color: Color(0xFF8B949E),
+                    size: 18,
+                  ),
+                ],
               ),
-              const Spacer(),
-              const Icon(Icons.more_vert, color: Color(0xFF8B949E), size: 18),
+              SizedBox(height: compact ? 8 : 12),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: const Color(0xFFFFFFFF),
+                    fontSize: valueFontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
-          ),
-          const Spacer(), // Push content to valid positions if height allows
-          Text(
-            value,
-            style: const TextStyle(
-              color: Color(0xFFFFFFFF),
-              fontSize: 24, // Slightly smaller font for mobile safety
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(color: Color(0xFF8B949E), fontSize: 12),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -11,6 +11,7 @@ import '../widgets/event_log_card.dart';
 import '../widgets/maintenance_board_card.dart';
 import '../machines/add_machine_screen.dart';
 import '../auth/login_screen.dart';
+import '../profile/edit_account_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -43,10 +44,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (!_isMobile) _buildSidebar(),
             // Main Content
             Expanded(
-              child: Column(
+              child: Stack(
                 children: [
-                  _buildTopBar(),
-                  Expanded(child: _buildMainContent()),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 76),
+                    child: _buildMainContent(),
+                  ),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    right: 12,
+                    child: _buildFloatingTopIconsBar(),
+                  ),
                 ],
               ),
             ),
@@ -55,6 +64,145 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       // Bottom Navigation Bar for mobile
       bottomNavigationBar: _isMobile ? _buildBottomNavBar() : null,
+    );
+  }
+
+  Widget _buildFloatingTopIconsBar() {
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        return Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161B22).withOpacity(0.92),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF30363D)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              if (_isMobile)
+                IconButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Sidebar is available on larger screens'),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.menu, color: Color(0xFF8B949E)),
+                ),
+              Expanded(
+                child: Text(
+                  _getPageTitle(),
+                  style: const TextStyle(
+                    color: Color(0xFFFFFFFF),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (MediaQuery.of(context).size.width > 380)
+                IconButton(
+                  icon: const Icon(Icons.search, color: Color(0xFF8B949E)),
+                  onPressed: () {},
+                ),
+              IconButton(
+                icon: const Icon(
+                  Icons.notifications_outlined,
+                  color: Color(0xFF8B949E),
+                ),
+                onPressed: () {},
+              ),
+              const SizedBox(width: 6),
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const AddMachineScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.add, color: Colors.white),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFF238636),
+                ),
+              ),
+              const SizedBox(width: 6),
+              PopupMenuButton<void>(
+                icon: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: const Color(0xFF58A6FF),
+                  child: Text(
+                    (authState.user?.email ?? 'U')
+                        .substring(0, 1)
+                        .toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                color: const Color(0xFF161B22),
+                itemBuilder: (context) => <PopupMenuEntry<void>>[
+                  PopupMenuItem<void>(
+                    onTap: () {
+                      Future.microtask(() {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const EditAccountScreen(),
+                          ),
+                        );
+                      });
+                    },
+                    child: const Row(
+                      children: [
+                        Icon(Icons.manage_accounts, color: Color(0xFF8B949E)),
+                        SizedBox(width: 10),
+                        Text(
+                          'Edit Account',
+                          style: TextStyle(color: Color(0xFFFFFFFF)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<void>(
+                    onTap: () {
+                      Future.microtask(() {
+                        context.read<AuthCubit>().signOut();
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                        );
+                      });
+                    },
+                    child: const Row(
+                      children: [
+                        Icon(Icons.logout, color: Color(0xFFDA3633)),
+                        SizedBox(width: 10),
+                        Text(
+                          'Sign Out',
+                          style: TextStyle(color: Color(0xFFDA3633)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

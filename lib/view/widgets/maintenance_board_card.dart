@@ -10,49 +10,111 @@ class MaintenanceBoardCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                'Maintenance Board',
-                style: TextStyle(
-                  color: Color(0xFFFFFFFF),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Schedule Maintenance'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF238636),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 520;
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Maintenance Board',
+                      style: TextStyle(
+                        color: Color(0xFFFFFFFF),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('Schedule Maintenance'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF238636),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  const Text(
+                    'Maintenance Board',
+                    style: TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Schedule Maintenance'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF238636),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _buildColumn('Pending', const Color(0xFFD29922))),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildColumn('In Progress', const Color(0xFF58A6FF)),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildColumn('Completed', const Color(0xFF3FB950)),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 700;
+
+              if (isMobile) {
+                return Column(
+                  children: [
+                    _buildColumn('Pending', const Color(0xFFD29922)),
+                    const SizedBox(height: 16),
+                    _buildColumn('In Progress', const Color(0xFF58A6FF)),
+                    const SizedBox(height: 16),
+                    _buildColumn('Completed', const Color(0xFF3FB950)),
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildColumn('Pending', const Color(0xFFD29922)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildColumn('In Progress', const Color(0xFF58A6FF)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildColumn('Completed', const Color(0xFF3FB950)),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -87,6 +149,8 @@ class MaintenanceBoardCard extends StatelessWidget {
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const Spacer(),
               Container(
@@ -181,6 +245,8 @@ class MaintenanceBoardCard extends StatelessWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Container(
@@ -216,6 +282,8 @@ class MaintenanceBoardCard extends StatelessWidget {
                     color: Color(0xFF8B949E),
                     fontSize: 12,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
