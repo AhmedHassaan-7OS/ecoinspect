@@ -57,24 +57,67 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundColor: const Color(0xFF58A6FF),
-                          backgroundImage: (user?.avatarUrl ?? '').isNotEmpty
-                              ? NetworkImage(user!.avatarUrl)
-                              : null,
-                          child: (user?.avatarUrl ?? '').isEmpty
-                              ? Text(
-                                  (user?.email ?? 'U')
-                                      .substring(0, 1)
-                                      .toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                )
-                              : null,
+                        SizedBox(
+                          width: 64,
+                          height: 64,
+                          child: ClipOval(
+                            child: DecoratedBox(
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF58A6FF),
+                              ),
+                              child: (user?.avatarUrl ?? '').isNotEmpty
+                                  ? Image.network(
+                                      user!.avatarUrl,
+                                      fit: BoxFit.cover,
+                                      cacheWidth: 192,
+                                      filterQuality: FilterQuality.low,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Center(
+                                          child: Text(
+                                            (user?.email ?? 'U')
+                                                .substring(0, 1)
+                                                .toUpperCase(),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      loadingBuilder:
+                                          (context, child, progress) {
+                                        if (progress == null) return child;
+                                        return const Center(
+                                          child: SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation(
+                                                Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        (user?.email ?? 'U')
+                                            .substring(0, 1)
+                                            .toUpperCase(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(

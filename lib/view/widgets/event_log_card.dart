@@ -11,6 +11,7 @@ class EventLogCard extends StatefulWidget {
 
 class _EventLogCardState extends State<EventLogCard> {
   _EventFilter _selectedFilter = _EventFilter.all;
+  final ScrollController _horizontalTableController = ScrollController();
 
   List<Map<String, String>> _allEvents() {
     return [
@@ -86,6 +87,12 @@ class _EventLogCardState extends State<EventLogCard> {
       case _EventFilter.maintenance:
         return events.where((e) => e['type'] == 'Maintenance').toList();
     }
+  }
+
+  @override
+  void dispose() {
+    _horizontalTableController.dispose();
+    super.dispose();
   }
 
   @override
@@ -208,18 +215,34 @@ class _EventLogCardState extends State<EventLogCard> {
             },
           ),
           const SizedBox(height: 24),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF161B22),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF30363D)),
-            ),
-            child: Column(
-              children: [
-                _buildEventHeader(),
-                ...events.map(_buildEventRow).toList(),
-              ],
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final tableMinWidth = constraints.maxWidth < 720 ? 720.0 : 0.0;
+              return Scrollbar(
+                controller: _horizontalTableController,
+                thumbVisibility: constraints.maxWidth < 720,
+                child: SingleChildScrollView(
+                  controller: _horizontalTableController,
+                  scrollDirection: Axis.horizontal,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: tableMinWidth),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161B22),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF30363D)),
+                      ),
+                      child: Column(
+                        children: [
+                          _buildEventHeader(),
+                          ...events.map(_buildEventRow).toList(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -264,25 +287,30 @@ class _EventLogCardState extends State<EventLogCard> {
       ),
       child: Row(
         children: [
-          _buildHeaderCell('Time', flex: 1),
-          _buildHeaderCell('Machine', flex: 2),
-          _buildHeaderCell('Event Type', flex: 2),
-          _buildHeaderCell('Severity', flex: 1),
-          _buildHeaderCell('Description', flex: 3),
+          _buildHeaderCell('Time', width: 84),
+          _buildHeaderCell('Machine', width: 150),
+          _buildHeaderCell('Event Type', width: 150),
+          _buildHeaderCell('Severity', width: 92),
+          _buildHeaderCell('Description', width: 260),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderCell(String text, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Color(0xFF8B949E),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+  Widget _buildHeaderCell(String text, {required double width}) {
+    return SizedBox(
+      width: width,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFF8B949E),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
@@ -296,71 +324,92 @@ class _EventLogCardState extends State<EventLogCard> {
       ),
       child: Row(
         children: [
-          Expanded(
-            flex: 1,
-            child: Text(
-              event['time']!,
-              style: const TextStyle(color: Color(0xFF8B949E), fontSize: 13),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              event['machine']!,
-              style: const TextStyle(
-                color: Color(0xFFFFFFFF),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+          SizedBox(
+            width: 84,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Text(
+                event['time']!,
+                style: const TextStyle(color: Color(0xFF8B949E), fontSize: 13),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                Icon(
-                  _getEventIcon(event['type']!),
-                  size: 16,
-                  color: const Color(0xFF58A6FF),
+          SizedBox(
+            width: 150,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Text(
+                event['machine']!,
+                style: const TextStyle(
+                  color: Color(0xFFFFFFFF),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    event['type']!,
-                    style: const TextStyle(
-                      color: Color(0xFFFFFFFF),
-                      fontSize: 13,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 150,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Row(
+                children: [
+                  Icon(
+                    _getEventIcon(event['type']!),
+                    size: 16,
+                    color: const Color(0xFF58A6FF),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      event['type']!,
+                      style: const TextStyle(
+                        color: Color(0xFFFFFFFF),
+                        fontSize: 13,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 92,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color:
+                        _getSeverityColor(event['severity']!).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    event['severity']!,
+                    style: TextStyle(
+                      color: _getSeverityColor(event['severity']!),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _getSeverityColor(event['severity']!).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                event['severity']!,
-                style: TextStyle(
-                  color: _getSeverityColor(event['severity']!),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
               ),
             ),
           ),
-          Expanded(
-            flex: 3,
+          SizedBox(
+            width: 260,
             child: Text(
               event['desc']!,
               style: const TextStyle(color: Color(0xFF8B949E), fontSize: 13),

@@ -236,26 +236,78 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                       children: [
                         Stack(
                           children: [
-                            CircleAvatar(
-                              radius: 28,
-                              backgroundColor: const Color(0xFF58A6FF),
-                              backgroundImage: _avatarBytes != null
-                                  ? MemoryImage(_avatarBytes!)
-                                  : ((user?.avatarUrl ?? '').isNotEmpty
-                                      ? NetworkImage(user!.avatarUrl)
-                                      : null),
-                              child: _avatarBytes == null
-                                  ? Text(
-                                      (user?.email ?? 'U')
-                                          .substring(0, 1)
-                                          .toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    )
-                                  : null,
+                            SizedBox(
+                              width: 56,
+                              height: 56,
+                              child: ClipOval(
+                                child: DecoratedBox(
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF58A6FF),
+                                  ),
+                                  child: _avatarBytes != null
+                                      ? Image.memory(
+                                          _avatarBytes!,
+                                          fit: BoxFit.cover,
+                                          cacheWidth: 168,
+                                          filterQuality: FilterQuality.low,
+                                        )
+                                      : ((user?.avatarUrl ?? '').isNotEmpty
+                                          ? Image.network(
+                                              user!.avatarUrl,
+                                              fit: BoxFit.cover,
+                                              cacheWidth: 168,
+                                              filterQuality: FilterQuality.low,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return Center(
+                                                  child: Text(
+                                                    (user?.email ?? 'U')
+                                                        .substring(0, 1)
+                                                        .toUpperCase(),
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              loadingBuilder:
+                                                  (context, child, progress) {
+                                                if (progress == null) {
+                                                  return child;
+                                                }
+                                                return const Center(
+                                                  child: SizedBox(
+                                                    width: 18,
+                                                    height: 18,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation(
+                                                        Colors.white,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Center(
+                                              child: Text(
+                                                (user?.email ?? 'U')
+                                                    .substring(0, 1)
+                                                    .toUpperCase(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                            )),
+                                ),
+                              ),
                             ),
                             Positioned(
                               right: -6,
