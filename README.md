@@ -2,6 +2,8 @@
 
 EcoInspect is a cross-platform Flutter application for managing CNC operations and sustainability-related operational data. It uses **BLoC** for state management and **Supabase** for authentication and backend data storage.
 
+https://github.com/user-attachments/assets/091649f4-f52a-4279-a53a-3e5755e6651f
+
 ## Features
 
 - **Authentication**: Sign in/out and session persistence (Supabase).
